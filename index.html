@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success - Welcome to digi click </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-netflux-dark {
+            background-color: #141414;
+        }
+        .btn-netflux-red {
+            background-color: #E50914;
+            transition: background-color 0.3s ease;
+        }
+        .btn-netflux-red:hover {
+            background-color: #f6121d;
+        }
+        .btn-netflux-red:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        .icon-glow {
+            filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.5));
+        }
+        .order-id-box {
+            background-color: #2d2d2d;
+            border: 1px dashed #4a4a4a;
+        }
+        .form-input {
+            background-color: #333;
+            border: 1px solid #555;
+            color: #fff;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #E50914;
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-netflux-dark text-white antialiased">
+    <!-- Main container for the success page -->
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <form id="details-form" class="w-full max-w-md mx-auto text-center bg-[#1f1f1f] p-8 md:p-12 rounded-2xl shadow-2xl shadow-black/50">
+            
+            <!-- Success Icon -->
+            <div class="mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-400 mx-auto icon-glow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+
+            <!-- Header Text -->
+            <h1 class="text-3xl md:text-4xl font-black text-white mb-3">You're In!</h1>
+            <p class="text-gray-300 text-lg mb-6">Your subscription is confirmed. Enter your mobile number below to get access.</p>
+
+            <!-- Mobile Number Input -->
+            <div class="mb-4 text-left">
+                <label for="mobile-number" class="block text-sm font-medium text-gray-300 mb-2">Your Mobile Number</label>
+                <input type="tel" id="mobile-number" name="mobile-number" class="w-full form-input p-3 rounded-lg" placeholder="e.g., 9876543210" required>
+                <p id="error-message" class="text-red-500 text-sm mt-1 h-4"></p>
+            </div>
+
+            <!-- Order ID Display -->
+            <div class="mb-8 text-left">
+                <p class="text-gray-400 text-sm mb-2">Your Order ID:</p>
+                <div class="order-id-box p-3 rounded-lg text-center">
+                    <p id="order-id-display" class="text-lg font-mono tracking-wider"></p>
+                </div>
+            </div>
+
+            <!-- Call to Action Button -->
+            <button type="submit" id="submit-button"
+               class="block w-full btn-netflux-red text-white font-bold py-4 px-4 rounded-lg text-lg shadow-lg shadow-red-900/50 hover:scale-105 transform transition-transform duration-300 focus:outline-none focus:ring-4 focus:ring-red-500/50">
+                Get Access on WhatsApp
+            </button>
+            <p id="success-message" class="text-green-400 text-sm mt-2 h-4"></p>
+
+        </form>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const businessWhatsappNumber = '+918942865606'; // Replace with your WhatsApp number
+        const appName = 'Zee 5'; // Your App Name
+        const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbyuLLmrqQgcv9niA9b00HmOkPF_kCOwvW3mGyNnItsNkCt0lttfk3FuI7Y1SYizMdVp/exec'; 
+        let orderId;
+
+        window.onload = function() {
+            orderId = `NFLX-${Date.now()}`;
+            document.getElementById('order-id-display').textContent = orderId;
+        };
+
+        const detailsForm = document.getElementById('details-form');
+        detailsForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const mobileInput = document.getElementById('mobile-number');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            const submitButton = document.getElementById('submit-button');
+            const customerMobileNumber = mobileInput.value.trim();
+
+            if (!customerMobileNumber || !/^\d{10,15}$/.test(customerMobileNumber)) {
+                errorMessage.textContent = 'Please enter a valid mobile number.';
+                successMessage.textContent = '';
+                mobileInput.focus();
+                return;
+            }
+            
+            errorMessage.textContent = '';
+            successMessage.textContent = '';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+
+            const data = {
+                appName: appName,
+                orderId: orderId,
+                mobileNumber: customerMobileNumber
+            };
+
+            // --- UPDATED FETCH LOGIC ---
+            fetch(googleScriptUrl, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    // Use text/plain to avoid a browser preflight request, which can cause issues with Apps Script.
+                    "Content-Type": "text/plain;charset=utf-8",
+                },
+            })
+            .then(response => response.json()) // Parse the JSON response from the script.
+            .then(jsonResponse => {
+                if (jsonResponse.result === 'success') {
+                    // The script confirmed success! Now we can redirect.
+                    successMessage.textContent = 'Data saved! Redirecting to WhatsApp...';
+                    const message = `Hi! I've just subscribed to Netflux.\n\nMy Order ID: ${orderId}\nMy Mobile Number: ${customerMobileNumber}\n\nPlease grant me access.`;
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/${businessWhatsappNumber}?text=${encodedMessage}`;
+                    window.open(whatsappUrl, '_blank');
+                } else {
+                    // The script reported an error. Show it to the user.
+                    console.error('Google Script Error:', jsonResponse.error);
+                    errorMessage.textContent = 'Error saving data. Please try again later.';
+                }
+            })
+            .catch(error => {
+                // This catches network errors or problems with the fetch itself.
+                console.error('Fetch Error:', error);
+                errorMessage.textContent = 'Could not connect. Please check your network.';
+            })
+            .finally(() => {
+                // Re-enable the button whether it succeeded or failed.
+                submitButton.disabled = false;
+                submitButton.textContent = 'Get Access on WhatsApp';
+            });
+        });
+    </script>
+</body>
+</html>
